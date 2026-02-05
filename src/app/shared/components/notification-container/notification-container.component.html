@@ -1,0 +1,12 @@
+<div class="notification-container">
+  <app-error-message
+    *ngFor="let notification of notifications; trackBy: trackByNotification"
+    [title]="notification.title"
+    [message]="notification.message"
+    [type]="notification.type"
+    [actions]="notification.actions || []"
+    [dismissible]="true"
+    (dismissed)="onDismiss(notification)"
+    class="notification-item">
+  </app-error-message>
+</div>

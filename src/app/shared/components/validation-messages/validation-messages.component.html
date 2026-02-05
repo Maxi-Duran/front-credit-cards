@@ -1,0 +1,8 @@
+<div class="validation-messages" *ngIf="shouldShow">
+  <div 
+    *ngFor="let validationMessage of validationMessages" 
+    class="validation-message">
+    <mat-icon *ngIf="showIcon" class="validation-message__icon">error</mat-icon>
+    <span class="validation-message__text">{{ validationMessage.message }}</span>
+  </div>
+</div>

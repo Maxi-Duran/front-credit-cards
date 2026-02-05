@@ -1,0 +1,92 @@
+h2 {
+  margin: 0;
+  padding: 0;
+}
+
+mat-dialog-content {
+  padding: 24px;
+  min-width: 500px;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+.user-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  .full-width {
+    width: 100%;
+  }
+}
+
+.permissions-section {
+  margin-top: 8px;
+
+  .permissions-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 12px;
+    color: rgba(0, 0, 0, 0.87);
+  }
+
+  .permissions-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+
+    mat-chip {
+      cursor: pointer;
+      background-color: #e0e0e0;
+      color: rgba(0, 0, 0, 0.87);
+      transition: all 0.2s ease;
+
+      &:hover {
+        background-color: #d0d0d0;
+      }
+
+      &.selected {
+        background-color: #3f51b5;
+        color: white;
+
+        &:hover {
+          background-color: #303f9f;
+        }
+      }
+    }
+  }
+
+  mat-error {
+    font-size: 12px;
+    margin-top: 8px;
+    display: block;
+  }
+}
+
+mat-dialog-actions {
+  padding: 16px 24px;
+  margin: 0;
+  border-top: 1px solid rgba(0, 0, 0, 0.12);
+
+  button {
+    margin-left: 8px;
+  }
+}
+
+// Responsive design
+@media (max-width: 600px) {
+  mat-dialog-content {
+    min-width: auto;
+    width: 100%;
+    padding: 16px;
+  }
+
+  .permissions-section {
+    .permissions-chips {
+      mat-chip {
+        font-size: 12px;
+      }
+    }
+  }
+}

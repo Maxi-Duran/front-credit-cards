@@ -1,0 +1,115 @@
+<div class="login-container">
+  <div class="login-card-wrapper">
+    <mat-card class="login-card">
+      <mat-card-header class="login-header">
+        <div class="login-title">
+          <h1>{{ t('title') }}</h1>
+          <p class="login-subtitle">{{ t('subtitle') }}</p>
+        </div>
+        
+        <!-- Language Selector -->
+        <div class="language-selector">
+          <mat-form-field appearance="outline" class="language-field">
+            <mat-label>{{ t('language') }}</mat-label>
+            <mat-select 
+              formControlName="language"
+              [value]="selectedLanguage">
+              <mat-option 
+                *ngFor="let lang of languages" 
+                [value]="lang.code">
+                <span class="language-option">
+                  <span class="flag">{{ lang.flag }}</span>
+                  <span class="name">{{ lang.name }}</span>
+                </span>
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+      </mat-card-header>
+
+      <mat-card-content class="login-content">
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+          
+          <!-- User ID Field -->
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>{{ t('userId') }}</mat-label>
+            <input 
+              matInput 
+              formControlName="userId"
+              [placeholder]="t('userId')"
+              autocomplete="username"
+              [class.error]="hasFieldError('userId')">
+            <mat-icon matSuffix>person</mat-icon>
+            <mat-error *ngIf="hasFieldError('userId')">
+              {{ getFieldError('userId') }}
+            </mat-error>
+          </mat-form-field>
+
+          <!-- Password Field -->
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>{{ t('password') }}</mat-label>
+            <input 
+              matInput 
+              type="password"
+              formControlName="password"
+              [placeholder]="t('password')"
+              autocomplete="current-password"
+              [class.error]="hasFieldError('password')">
+            <mat-icon matSuffix>lock</mat-icon>
+            <mat-error *ngIf="hasFieldError('password')">
+              {{ getFieldError('password') }}
+            </mat-error>
+          </mat-form-field>
+
+          <!-- Login Button -->
+          <button 
+            mat-raised-button 
+            color="primary" 
+            type="submit"
+            class="login-button full-width"
+            [disabled]="isLoading || loginAttempts >= maxLoginAttempts">
+            
+            <mat-spinner 
+              *ngIf="isLoading" 
+              diameter="20" 
+              class="login-spinner">
+            </mat-spinner>
+            
+            <span *ngIf="!isLoading">{{ t('login') }}</span>
+            <span *ngIf="isLoading">{{ t('loading') }}</span>
+          </button>
+
+          <!-- Login Attempts Warning -->
+          <div 
+            *ngIf="loginAttempts > 0 && loginAttempts < maxLoginAttempts" 
+            class="login-attempts-warning">
+            <mat-icon color="warn">warning</mat-icon>
+            <span>
+              {{ selectedLanguage === 'es' 
+                ? `Intentos restantes: ${maxLoginAttempts - loginAttempts}` 
+                : `Attempts remaining: ${maxLoginAttempts - loginAttempts}` }}
+            </span>
+          </div>
+
+          <!-- Max Attempts Reached -->
+          <div 
+            *ngIf="loginAttempts >= maxLoginAttempts" 
+            class="max-attempts-error">
+            <mat-icon color="warn">block</mat-icon>
+            <span>{{ t('maxAttemptsReached') }}</span>
+          </div>
+
+        </form>
+      </mat-card-content>
+    </mat-card>
+  </div>
+
+  <!-- Footer -->
+  <div class="login-footer">
+    <p>
+      {{ selectedLanguage === 'es' 
+        ? '© 2024 CardDemo. Sistema de Gestión de Tarjetas de Crédito.' 
+        : '© 2024 CardDemo. Credit Card Management System.' }}
+    </p>
+  </div>
+</div>

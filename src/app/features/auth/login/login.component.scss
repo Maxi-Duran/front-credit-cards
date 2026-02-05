@@ -1,0 +1,241 @@
+.login-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.login-card-wrapper {
+  width: 100%;
+  max-width: 400px;
+  margin-bottom: 20px;
+}
+
+.login-card {
+  width: 100%;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  border-radius: 16px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+}
+
+.login-header {
+  background: linear-gradient(135deg, #3f51b5 0%, #2196f3 100%);
+  color: white;
+  padding: 24px;
+  text-align: center;
+  position: relative;
+  
+  .login-title {
+    margin-bottom: 16px;
+    
+    h1 {
+      margin: 0 0 8px 0;
+      font-size: 24px;
+      font-weight: 500;
+    }
+    
+    .login-subtitle {
+      margin: 0;
+      font-size: 14px;
+      opacity: 0.9;
+    }
+  }
+  
+  .language-selector {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    
+    .language-field {
+      width: 120px;
+      
+      ::ng-deep {
+        .mat-mdc-form-field-subscript-wrapper {
+          display: none;
+        }
+        
+        .mat-mdc-text-field-wrapper {
+          background-color: rgba(255, 255, 255, 0.1);
+          border-radius: 8px;
+        }
+        
+        .mat-mdc-form-field-outline {
+          color: rgba(255, 255, 255, 0.3);
+        }
+        
+        .mat-mdc-form-field-label {
+          color: rgba(255, 255, 255, 0.9);
+        }
+        
+        .mat-mdc-select-value {
+          color: white;
+        }
+        
+        .mat-mdc-select-arrow {
+          color: rgba(255, 255, 255, 0.9);
+        }
+      }
+    }
+  }
+}
+
+.login-content {
+  padding: 32px 24px 24px;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.full-width {
+  width: 100%;
+}
+
+.login-button {
+  height: 48px;
+  font-size: 16px;
+  font-weight: 500;
+  margin-top: 8px;
+  position: relative;
+  
+  .login-spinner {
+    margin-right: 8px;
+  }
+  
+  &:disabled {
+    opacity: 0.6;
+  }
+}
+
+.language-option {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  
+  .flag {
+    font-size: 16px;
+  }
+  
+  .name {
+    font-size: 14px;
+  }
+}
+
+.login-attempts-warning {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #ff9800;
+  font-size: 14px;
+  margin-top: 8px;
+  padding: 8px;
+  background-color: rgba(255, 152, 0, 0.1);
+  border-radius: 4px;
+  
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.max-attempts-error {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #f44336;
+  font-size: 14px;
+  margin-top: 8px;
+  padding: 8px;
+  background-color: rgba(244, 67, 54, 0.1);
+  border-radius: 4px;
+  
+  mat-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+}
+
+.login-footer {
+  text-align: center;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 12px;
+  
+  p {
+    margin: 0;
+  }
+}
+
+// Error state styling
+::ng-deep {
+  .mat-mdc-form-field.mat-form-field-invalid {
+    .mat-mdc-text-field-wrapper {
+      border-color: #f44336;
+    }
+  }
+  
+  .mat-mdc-form-field-error {
+    font-size: 12px;
+    margin-top: 4px;
+  }
+}
+
+// Responsive design
+@media (max-width: 480px) {
+  .login-container {
+    padding: 16px;
+  }
+  
+  .login-card-wrapper {
+    max-width: 100%;
+  }
+  
+  .login-header {
+    padding: 20px 16px;
+    
+    .login-title h1 {
+      font-size: 20px;
+    }
+    
+    .language-selector {
+      position: static;
+      margin-top: 16px;
+      display: flex;
+      justify-content: center;
+      
+      .language-field {
+        width: 140px;
+      }
+    }
+  }
+  
+  .login-content {
+    padding: 24px 16px 16px;
+  }
+}
+
+@media (max-width: 360px) {
+  .login-header {
+    .login-title h1 {
+      font-size: 18px;
+    }
+    
+    .login-subtitle {
+      font-size: 12px;
+    }
+  }
+  
+  .login-button {
+    height: 44px;
+    font-size: 14px;
+  }
+}

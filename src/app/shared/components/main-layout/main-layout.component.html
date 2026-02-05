@@ -1,0 +1,132 @@
+<div class="main-layout">
+  <!-- Header Toolbar -->
+  <mat-toolbar color="primary" class="header-toolbar">
+    <!-- Menu Toggle Button -->
+    <button 
+      mat-icon-button 
+      (click)="toggleSidenav()"
+      class="menu-toggle"
+      [attr.aria-label]="currentLanguage() === 'es' ? 'Abrir menú' : 'Open menu'">
+      <mat-icon>menu</mat-icon>
+    </button>
+
+    <!-- App Title -->
+    <span class="app-title">CardDemo</span>
+
+    <!-- Spacer -->
+    <span class="spacer"></span>
+
+    <!-- User Info and Actions -->
+    <div class="user-section" *ngIf="currentUser()">
+      <!-- Language Selector -->
+      <button 
+        mat-icon-button 
+        [matMenuTriggerFor]="languageMenu"
+        class="language-button"
+        [attr.aria-label]="currentLanguage() === 'es' ? 'Cambiar idioma' : 'Change language'">
+        <mat-icon>language</mat-icon>
+      </button>
+      
+      <mat-menu #languageMenu="matMenu">
+        <button 
+          mat-menu-item 
+          (click)="switchLanguage('es')"
+          [class.active]="currentLanguage() === 'es'">
+          <mat-icon>{{ currentLanguage() === 'es' ? 'check' : '' }}</mat-icon>
+          <span>{{ getLanguageLabel('es') }}</span>
+        </button>
+        <button 
+          mat-menu-item 
+          (click)="switchLanguage('en')"
+          [class.active]="currentLanguage() === 'en'">
+          <mat-icon>{{ currentLanguage() === 'en' ? 'check' : '' }}</mat-icon>
+          <span>{{ getLanguageLabel('en') }}</span>
+        </button>
+      </mat-menu>
+
+      <!-- User Menu -->
+      <button 
+        mat-icon-button 
+        [matMenuTriggerFor]="userMenu"
+        class="user-button"
+        [attr.aria-label]="currentLanguage() === 'es' ? 'Menú de usuario' : 'User menu'">
+        <mat-icon>account_circle</mat-icon>
+      </button>
+      
+      <mat-menu #userMenu="matMenu">
+        <div class="user-info-header" mat-menu-item disabled>
+          <div class="user-name">{{ getUserDisplayName() }}</div>
+          <div class="user-role">{{ getUserRoleDisplay() }}</div>
+        </div>
+        <mat-divider></mat-divider>
+        <button mat-menu-item (click)="logout()">
+          <mat-icon>logout</mat-icon>
+          <span>{{ currentLanguage() === 'es' ? 'Cerrar Sesión' : 'Logout' }}</span>
+        </button>
+      </mat-menu>
+    </div>
+  </mat-toolbar>
+
+  <!-- Sidenav Container -->
+  <mat-sidenav-container class="sidenav-container">
+    <!-- Side Navigation -->
+    <mat-sidenav 
+      #sidenav
+      [mode]="sidenavMode()"
+      [opened]="sidenavOpened()"
+      class="sidenav"
+      [fixedInViewport]="isMobile()"
+      [fixedTopGap]="isMobile() ? 64 : 0">
+      
+      <!-- Navigation populated by NavigationService -->
+      <nav class="nav-menu">
+        <mat-nav-list>
+          <!-- Regular Menu Items -->
+          <div *ngFor="let item of getRegularMenuItems()">
+            <a 
+              mat-list-item 
+              [routerLink]="item.route" 
+              routerLinkActive="active"
+              (click)="navigateToMenuItem(item)"
+              [class.active]="isMenuItemActive(item)">
+              <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
+              <span matListItemTitle>{{ item.label }}</span>
+            </a>
+            <mat-divider *ngIf="item.dividerAfter"></mat-divider>
+          </div>
+          
+          <!-- Admin Section - shown only for admin users -->
+          <div *ngIf="isAdmin() && getAdminMenuItems().length > 0">
+            <mat-divider></mat-divider>
+            <h3 matSubheader>
+              {{ currentLanguage() === 'es' ? 'Administración' : 'Administration' }}
+            </h3>
+            
+            <div *ngFor="let item of getAdminMenuItems()">
+              <a 
+                mat-list-item 
+                [routerLink]="item.route" 
+                routerLinkActive="active"
+                (click)="navigateToMenuItem(item)"
+                [class.active]="isMenuItemActive(item)">
+                <mat-icon matListItemIcon>{{ item.icon }}</mat-icon>
+                <span matListItemTitle>{{ item.label }}</span>
+              </a>
+            </div>
+          </div>
+        </mat-nav-list>
+      </nav>
+    </mat-sidenav>
+
+    <!-- Main Content -->
+    <mat-sidenav-content class="main-content">
+      <!-- Breadcrumb Navigation -->
+      <app-breadcrumb class="breadcrumb-container"></app-breadcrumb>
+      
+      <!-- Page Content -->
+      <div class="page-content">
+        <router-outlet></router-outlet>
+      </div>
+    </mat-sidenav-content>
+  </mat-sidenav-container>
+</div>

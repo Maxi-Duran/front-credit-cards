@@ -1,0 +1,120 @@
+.error-message {
+  display: flex;
+  padding: 16px;
+  border-radius: 4px;
+  margin-bottom: 16px;
+  border-left: 4px solid;
+  background-color: #fff;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
+  &--error {
+    border-left-color: #f44336;
+    background-color: #ffebee;
+  }
+
+  &--warning {
+    border-left-color: #ff9800;
+    background-color: #fff3e0;
+  }
+
+  &--info {
+    border-left-color: #2196f3;
+    background-color: #e3f2fd;
+  }
+
+  &--success {
+    border-left-color: #4caf50;
+    background-color: #e8f5e9;
+  }
+
+  &__content {
+    display: flex;
+    align-items: flex-start;
+    width: 100%;
+    gap: 12px;
+  }
+
+  &__icon {
+    flex-shrink: 0;
+    
+    mat-icon {
+      font-size: 24px;
+      width: 24px;
+      height: 24px;
+    }
+  }
+
+  &__text {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__title {
+    margin: 0 0 8px 0;
+    font-size: 16px;
+    font-weight: 500;
+    color: rgba(0, 0, 0, 0.87);
+  }
+
+  &__message {
+    margin: 0 0 12px 0;
+    font-size: 14px;
+    color: rgba(0, 0, 0, 0.6);
+    line-height: 1.5;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+  }
+
+  &__close {
+    flex-shrink: 0;
+    margin-left: auto;
+  }
+}
+
+.error-icon {
+  color: #f44336;
+}
+
+.warning-icon {
+  color: #ff9800;
+}
+
+.info-icon {
+  color: #2196f3;
+}
+
+.success-icon {
+  color: #4caf50;
+}
+
+// Responsive design
+@media (max-width: 600px) {
+  .error-message {
+    padding: 12px;
+
+    &__content {
+      gap: 8px;
+    }
+
+    &__title {
+      font-size: 14px;
+    }
+
+    &__message {
+      font-size: 13px;
+    }
+
+    &__actions {
+      flex-direction: column;
+      
+      button {
+        width: 100%;
+      }
+    }
+  }
+}

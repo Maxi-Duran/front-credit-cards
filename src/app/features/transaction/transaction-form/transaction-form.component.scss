@@ -1,0 +1,130 @@
+.transaction-form-container {
+  padding: 24px;
+  max-width: 1000px;
+  margin: 0 auto;
+
+  .header-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+
+    .title-section {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+
+      h1 {
+        margin: 0;
+        color: #1976d2;
+        font-size: 1.8rem;
+      }
+    }
+  }
+
+  .loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 64px;
+    gap: 16px;
+  }
+
+  .form-content .transaction-stepper {
+    background: transparent;
+
+    .step-card {
+      margin: 16px 0;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+      .form-row {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 16px;
+        flex-wrap: wrap;
+
+        mat-form-field {
+          flex: 1;
+          min-width: 250px;
+
+          &.full-width {
+            flex: 1 1 100%;
+            min-width: unset;
+          }
+        }
+      }
+
+      .card-info .selected-card {
+        background: #f8f9fa;
+        border-left: 4px solid #1976d2;
+
+        .card-details {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+          gap: 16px;
+        }
+      }
+
+      .review-section .review-group {
+        margin-bottom: 24px;
+
+        .review-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+          gap: 16px;
+        }
+      }
+
+      .validation-section {
+        padding: 16px;
+        background: #f8f9fa;
+
+        .validation-status {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+          font-weight: 500;
+
+          &.valid { color: #4caf50; }
+          &.invalid { color: #d32f2f; }
+        }
+      }
+
+      mat-card-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+      }
+    }
+  }
+
+  .form-actions {
+    display: flex;
+    justify-content: center;
+    margin-top: 24px;
+    padding-top: 16px;
+    border-top: 1px solid #e0e0e0;
+  }
+}
+
+@media (max-width: 1024px) {
+  .transaction-form-container {
+    padding: 16px;
+
+    .header-section {
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .form-content .transaction-stepper .step-card {
+      .form-row {
+        flex-direction: column;
+
+        mat-form-field { min-width: unset; }
+      }
+
+      .card-info .selected-card .card-details { grid-template-columns: 1fr; }
+      .review-section .review-group .review-grid { grid-template-columns: 1fr; }
+    }
+  }
+}

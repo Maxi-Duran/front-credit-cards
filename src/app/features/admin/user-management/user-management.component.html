@@ -1,0 +1,131 @@
+<div class="user-management-container">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>
+        <h1>User Management</h1>
+      </mat-card-title>
+    </mat-card-header>
+
+    <mat-card-content>
+      <!-- Search and Filter Section -->
+      <div class="search-section">
+        <form [formGroup]="searchForm" class="search-form">
+          <mat-form-field appearance="outline" class="search-field">
+            <mat-label>Search</mat-label>
+            <input matInput formControlName="query" placeholder="Search by name, user ID, or email">
+            <mat-icon matSuffix>search</mat-icon>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Role</mat-label>
+            <mat-select formControlName="role">
+              <mat-option value="">All Roles</mat-option>
+              <mat-option [value]="UserRole.ADMIN">Administrator</mat-option>
+              <mat-option [value]="UserRole.REGULAR">Regular User</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Status</mat-label>
+            <mat-select formControlName="status">
+              <mat-option value="">All Statuses</mat-option>
+              <mat-option [value]="UserStatus.ACTIVE">Active</mat-option>
+              <mat-option [value]="UserStatus.INACTIVE">Inactive</mat-option>
+              <mat-option [value]="UserStatus.LOCKED">Locked</mat-option>
+              <mat-option [value]="UserStatus.PENDING">Pending</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <button mat-stroked-button type="button" (click)="clearFilters()" class="clear-button">
+            <mat-icon>clear</mat-icon>
+            Clear
+          </button>
+        </form>
+
+        <button mat-raised-button color="primary" (click)="addUser()" class="add-button">
+          <mat-icon>add</mat-icon>
+          Add User
+        </button>
+      </div>
+
+      <!-- Loading Spinner -->
+      <div *ngIf="loading" class="loading-container">
+        <mat-spinner diameter="50"></mat-spinner>
+      </div>
+
+      <!-- Users Table -->
+      <div *ngIf="!loading" class="table-container">
+        <table mat-table [dataSource]="users" class="users-table">
+          <!-- User ID Column -->
+          <ng-container matColumnDef="userId">
+            <th mat-header-cell *matHeaderCellDef>User ID</th>
+            <td mat-cell *matCellDef="let user">{{ user.userId }}</td>
+          </ng-container>
+
+          <!-- Name Column -->
+          <ng-container matColumnDef="name">
+            <th mat-header-cell *matHeaderCellDef>Name</th>
+            <td mat-cell *matCellDef="let user">{{ user.name }}</td>
+          </ng-container>
+
+          <!-- Email Column -->
+          <ng-container matColumnDef="email">
+            <th mat-header-cell *matHeaderCellDef>Email</th>
+            <td mat-cell *matCellDef="let user">{{ user.email }}</td>
+          </ng-container>
+
+          <!-- Role Column -->
+          <ng-container matColumnDef="role">
+            <th mat-header-cell *matHeaderCellDef>Role</th>
+            <td mat-cell *matCellDef="let user">
+              <mat-chip [class]="user.role === UserRole.ADMIN ? 'role-admin' : 'role-regular'">
+                {{ getRoleDisplay(user.role) }}
+              </mat-chip>
+            </td>
+          </ng-container>
+
+          <!-- Status Column -->
+          <ng-container matColumnDef="status">
+            <th mat-header-cell *matHeaderCellDef>Status</th>
+            <td mat-cell *matCellDef="let user">
+              <mat-chip [class]="getStatusClass(user.status)">
+                {{ user.status }}
+              </mat-chip>
+            </td>
+          </ng-container>
+
+          <!-- Last Login Column -->
+          <ng-container matColumnDef="lastLogin">
+            <th mat-header-cell *matHeaderCellDef>Last Login</th>
+            <td mat-cell *matCellDef="let user">
+              {{ user.lastLogin ? (user.lastLogin | date:'short') : 'Never' }}
+            </td>
+          </ng-container>
+
+          <!-- Actions Column -->
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>Actions</th>
+            <td mat-cell *matCellDef="let user">
+              <button mat-icon-button color="primary" (click)="editUser(user)" matTooltip="Edit user">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button mat-icon-button color="warn" (click)="deleteUser(user)" matTooltip="Delete user">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </table>
+
+        <!-- Empty State -->
+        <div *ngIf="users.length === 0" class="empty-state">
+          <mat-icon>people_outline</mat-icon>
+          <p>No users found</p>
+          <p class="empty-state-hint">Try adjusting your search criteria or add a new user</p>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

@@ -1,0 +1,272 @@
+<div class="transaction-list-container">
+  <!-- Header Section -->
+  <div class="header-section">
+    <div class="title-section">
+      <h1>Transactions</h1>
+      <p class="subtitle" *ngIf="selectedCardId">Showing transactions for selected card</p>
+      <p class="subtitle" *ngIf="!selectedCardId">Showing all transactions</p>
+    </div>
+    
+    <div class="action-buttons">
+      <button mat-raised-button color="primary" routerLink="/transactions/new">
+        <mat-icon>add</mat-icon>
+        Add Transaction
+      </button>
+      <button mat-stroked-button (click)="exportTransactions()">
+        <mat-icon>download</mat-icon>
+        Export
+      </button>
+      <button mat-icon-button (click)="refreshTransactions()" matTooltip="Refresh">
+        <mat-icon>refresh</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <!-- Filter Section -->
+  <mat-card class="filter-card">
+    <mat-card-header>
+      <mat-card-title>
+        <button mat-button (click)="toggleFilterExpansion()" class="filter-toggle">
+          <mat-icon>{{ isFilterExpanded ? 'expand_less' : 'expand_more' }}</mat-icon>
+          Filters
+        </button>
+      </mat-card-title>
+      <div class="filter-actions">
+        <button mat-button (click)="clearFilters()">Clear All</button>
+        <button mat-button *ngIf="selectedCardId" (click)="clearCardFilter()">
+          <mat-icon>clear</mat-icon>
+          Clear Card Filter
+        </button>
+      </div>
+    </mat-card-header>
+    
+    <mat-card-content *ngIf="isFilterExpanded">
+      <form [formGroup]="filterForm" class="filter-form">
+        <div class="filter-row">
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Search</mat-label>
+            <input matInput formControlName="searchQuery" placeholder="Search by merchant, description, or reference">
+            <mat-icon matSuffix>search</mat-icon>
+          </mat-form-field>
+        </div>
+
+        <div class="filter-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Date From</mat-label>
+            <input matInput [matDatepicker]="dateFromPicker" formControlName="dateFrom">
+            <mat-datepicker-toggle matSuffix [for]="dateFromPicker"></mat-datepicker-toggle>
+            <mat-datepicker #dateFromPicker></mat-datepicker>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Date To</mat-label>
+            <input matInput [matDatepicker]="dateToPicker" formControlName="dateTo">
+            <mat-datepicker-toggle matSuffix [for]="dateToPicker"></mat-datepicker-toggle>
+            <mat-datepicker #dateToPicker></mat-datepicker>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Transaction Type</mat-label>
+            <mat-select formControlName="transactionType">
+              <mat-option value="">All Types</mat-option>
+              <mat-option *ngFor="let type of transactionTypes" [value]="type">
+                {{ type | titlecase }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Status</mat-label>
+            <mat-select formControlName="status">
+              <mat-option value="">All Statuses</mat-option>
+              <mat-option *ngFor="let status of transactionStatuses" [value]="status">
+                {{ status | titlecase }}
+              </mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <div class="filter-row">
+          <mat-form-field appearance="outline">
+            <mat-label>Amount From</mat-label>
+            <input matInput type="number" formControlName="amountMin" placeholder="0.00">
+            <span matPrefix>$</span>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Amount To</mat-label>
+            <input matInput type="number" formControlName="amountMax" placeholder="0.00">
+            <span matPrefix>$</span>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Merchant Name</mat-label>
+            <input matInput formControlName="merchantName" placeholder="Search by merchant">
+          </mat-form-field>
+
+          <mat-form-field appearance="outline">
+            <mat-label>Currency</mat-label>
+            <mat-select formControlName="currency">
+              <mat-option value="">All Currencies</mat-option>
+              <mat-option value="USD">USD</mat-option>
+              <mat-option value="EUR">EUR</mat-option>
+              <mat-option value="GBP">GBP</mat-option>
+            </mat-select>
+          </mat-form-field>
+        </div>
+
+        <div class="filter-row">
+          <mat-checkbox formControlName="fraudOnly" color="warn">
+            Show only fraud transactions
+          </mat-checkbox>
+        </div>
+      </form>
+    </mat-card-content>
+  </mat-card>
+
+  <!-- Loading Spinner -->
+  <div class="loading-container" *ngIf="loading$ | async">
+    <mat-spinner diameter="50"></mat-spinner>
+    <p>Loading transactions...</p>
+  </div>
+
+  <!-- Transactions Table -->
+  <div class="table-container" *ngIf="!(loading$ | async)">
+    <mat-table [dataSource]="dataSource" matSort (matSortChange)="onSortChange($event)" class="transactions-table">
+      
+      <!-- Transaction Date Column -->
+      <ng-container matColumnDef="transactionDate">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Date</mat-header-cell>
+        <mat-cell *matCellDef="let transaction">
+          <div class="date-cell">
+            <span class="date">{{ formatDate(transaction.transactionDate) }}</span>
+            <span class="posting-date" *ngIf="transaction.postingDate !== transaction.transactionDate">
+              Posted: {{ formatDate(transaction.postingDate) }}
+            </span>
+          </div>
+        </mat-cell>
+      </ng-container>
+
+      <!-- Merchant Name Column -->
+      <ng-container matColumnDef="merchantName">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Merchant</mat-header-cell>
+        <mat-cell *matCellDef="let transaction">
+          <div class="merchant-cell">
+            <span class="merchant-name">{{ transaction.merchantName }}</span>
+            <span class="merchant-category" *ngIf="transaction.merchantCategory">
+              {{ transaction.merchantCategory }}
+            </span>
+          </div>
+        </mat-cell>
+      </ng-container>
+
+      <!-- Description Column -->
+      <ng-container matColumnDef="description">
+        <mat-header-cell *matHeaderCellDef>Description</mat-header-cell>
+        <mat-cell *matCellDef="let transaction">
+          <div class="description-cell">
+            <span class="description">{{ transaction.description }}</span>
+            <span class="reference" *ngIf="transaction.referenceNumber">
+              Ref: {{ transaction.referenceNumber }}
+            </span>
+          </div>
+        </mat-cell>
+      </ng-container>
+
+      <!-- Amount Column -->
+      <ng-container matColumnDef="amount">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Amount</mat-header-cell>
+        <mat-cell *matCellDef="let transaction">
+          <div class="amount-cell">
+            <span class="amount" [class.negative]="transaction.amount < 0">
+              {{ formatCurrency(transaction.amount, transaction.currency) }}
+            </span>
+            <span class="original-amount" *ngIf="transaction.originalAmount && transaction.originalCurrency !== transaction.currency">
+              ({{ formatCurrency(transaction.originalAmount, transaction.originalCurrency) }})
+            </span>
+          </div>
+        </mat-cell>
+      </ng-container>
+
+      <!-- Transaction Type Column -->
+      <ng-container matColumnDef="transactionType">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Type</mat-header-cell>
+        <mat-cell *matCellDef="let transaction">
+          <mat-chip [color]="getTypeColor(transaction.transactionType)" selected>
+            {{ transaction.transactionType | titlecase }}
+          </mat-chip>
+        </mat-cell>
+      </ng-container>
+
+      <!-- Status Column -->
+      <ng-container matColumnDef="status">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>Status</mat-header-cell>
+        <mat-cell *matCellDef="let transaction">
+          <mat-chip [color]="getStatusColor(transaction.status)" selected>
+            {{ transaction.status | titlecase }}
+          </mat-chip>
+        </mat-cell>
+      </ng-container>
+
+      <!-- Fraud Indicator Column -->
+      <ng-container matColumnDef="fraudIndicator">
+        <mat-header-cell *matHeaderCellDef>Fraud</mat-header-cell>
+        <mat-cell *matCellDef="let transaction">
+          <div class="fraud-cell">
+            <mat-icon *ngIf="transaction.fraudIndicator" color="warn" matTooltip="Fraud detected">
+              warning
+            </mat-icon>
+            <mat-chip 
+              *ngIf="transaction.fraudIndicator" 
+              [color]="getFraudRiskColor(transaction.fraudRiskLevel)" 
+              selected
+              class="risk-chip">
+              {{ transaction.fraudRiskLevel | titlecase }} Risk
+            </mat-chip>
+          </div>
+        </mat-cell>
+      </ng-container>
+
+      <!-- Actions Column -->
+      <ng-container matColumnDef="actions">
+        <mat-header-cell *matHeaderCellDef>Actions</mat-header-cell>
+        <mat-cell *matCellDef="let transaction">
+          <div class="action-buttons">
+            <button mat-icon-button [routerLink]="['/transactions', transaction.id]" matTooltip="View Details">
+              <mat-icon>visibility</mat-icon>
+            </button>
+            <button mat-icon-button matTooltip="Edit" *ngIf="transaction.status === TransactionStatus.PENDING">
+              <mat-icon>edit</mat-icon>
+            </button>
+          </div>
+        </mat-cell>
+      </ng-container>
+
+      <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+      <mat-row *matRowDef="let row; columns: displayedColumns;" 
+               (click)="viewTransactionDetails(row)"
+               class="transaction-row"></mat-row>
+    </mat-table>
+
+    <!-- Paginator -->
+    <mat-paginator 
+      [length]="totalItems"
+      [pageSize]="pageSize"
+      [pageIndex]="currentPage"
+      [pageSizeOptions]="[5, 10, 25, 50, 100]"
+      (page)="onPageChange($event)"
+      showFirstLastButtons>
+    </mat-paginator>
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="!(loading$ | async) && dataSource.data.length === 0">
+    <mat-icon class="empty-icon">receipt_long</mat-icon>
+    <h2>No transactions found</h2>
+    <p>Try adjusting your filters or add a new transaction.</p>
+    <button mat-raised-button color="primary" routerLink="/transactions/new">
+      <mat-icon>add</mat-icon>
+      Add Transaction
+    </button>
+  </div>
+</div>

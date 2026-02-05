@@ -1,0 +1,46 @@
+<nav class="breadcrumb-nav" [attr.aria-label]="currentLanguage() === 'es' ? 'Navegación de ruta' : 'Breadcrumb navigation'">
+  <ol class="breadcrumb-list">
+    <!-- Home/Dashboard Link -->
+    <li class="breadcrumb-item">
+      <button 
+        mat-button 
+        class="breadcrumb-button home-button"
+        (click)="navigateTo({ label: getHomeLabel(), url: '/dashboard', active: false })"
+        [attr.aria-label]="getHomeLabel()">
+        <mat-icon class="breadcrumb-icon">home</mat-icon>
+        <span class="breadcrumb-label">{{ getHomeLabel() }}</span>
+      </button>
+    </li>
+
+    <!-- Breadcrumb Items -->
+    <li 
+      *ngFor="let item of breadcrumbs(); let last = last" 
+      class="breadcrumb-item"
+      [class.active]="item.active">
+      
+      <!-- Separator -->
+      <mat-icon class="breadcrumb-separator" *ngIf="breadcrumbs().length > 0">
+        chevron_right
+      </mat-icon>
+
+      <!-- Breadcrumb Button/Text -->
+      <button 
+        *ngIf="!item.active"
+        mat-button 
+        class="breadcrumb-button"
+        (click)="navigateTo(item)"
+        [attr.aria-label]="item.label">
+        <mat-icon *ngIf="item.icon" class="breadcrumb-icon">{{ item.icon }}</mat-icon>
+        <span class="breadcrumb-label">{{ item.label }}</span>
+      </button>
+
+      <span 
+        *ngIf="item.active"
+        class="breadcrumb-current"
+        [attr.aria-current]="'page'">
+        <mat-icon *ngIf="item.icon" class="breadcrumb-icon">{{ item.icon }}</mat-icon>
+        <span class="breadcrumb-label">{{ item.label }}</span>
+      </span>
+    </li>
+  </ol>
+</nav>

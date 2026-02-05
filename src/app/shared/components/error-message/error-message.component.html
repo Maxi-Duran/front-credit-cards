@@ -1,0 +1,31 @@
+<div class="error-message" [class]="'error-message--' + type">
+  <div class="error-message__content">
+    <div class="error-message__icon">
+      <mat-icon [class]="iconColor">{{ displayIcon }}</mat-icon>
+    </div>
+    
+    <div class="error-message__text">
+      <h3 class="error-message__title">{{ title }}</h3>
+      <p class="error-message__message">{{ message }}</p>
+      
+      <div class="error-message__actions" *ngIf="actions.length > 0">
+        <button 
+          *ngFor="let action of actions"
+          mat-button
+          [color]="action.primary ? 'primary' : 'default'"
+          (click)="onActionClick(action)">
+          {{ action.label }}
+        </button>
+      </div>
+    </div>
+    
+    <button 
+      *ngIf="dismissible"
+      mat-icon-button 
+      class="error-message__close"
+      (click)="onDismiss()"
+      aria-label="Cerrar">
+      <mat-icon>close</mat-icon>
+    </button>
+  </div>
+</div>

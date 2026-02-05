@@ -1,0 +1,158 @@
+<div class="transaction-types-container">
+  <mat-card>
+    <mat-card-header>
+      <mat-card-title>
+        <h1>Transaction Types Management</h1>
+      </mat-card-title>
+    </mat-card-header>
+
+    <mat-card-content>
+      <!-- Search and Filter Section -->
+      <div class="search-section">
+        <form [formGroup]="searchForm" class="search-form">
+          <mat-form-field appearance="outline" class="search-field">
+            <mat-label>Search</mat-label>
+            <input matInput formControlName="query" placeholder="Search by code or description">
+            <mat-icon matSuffix>search</mat-icon>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Category</mat-label>
+            <mat-select formControlName="category">
+              <mat-option value="">All Categories</mat-option>
+              <mat-option [value]="TransactionCategory.PURCHASE">Purchase</mat-option>
+              <mat-option [value]="TransactionCategory.WITHDRAWAL">Withdrawal</mat-option>
+              <mat-option [value]="TransactionCategory.PAYMENT">Payment</mat-option>
+              <mat-option [value]="TransactionCategory.REFUND">Refund</mat-option>
+              <mat-option [value]="TransactionCategory.TRANSFER">Transfer</mat-option>
+              <mat-option [value]="TransactionCategory.FEE">Fee</mat-option>
+              <mat-option [value]="TransactionCategory.INTEREST">Interest</mat-option>
+              <mat-option [value]="TransactionCategory.OTHER">Other</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Status</mat-label>
+            <mat-select formControlName="isActive">
+              <mat-option value="">All</mat-option>
+              <mat-option value="true">Active</mat-option>
+              <mat-option value="false">Inactive</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <mat-form-field appearance="outline" class="filter-field">
+            <mat-label>Risk Level</mat-label>
+            <mat-select formControlName="fraudRiskLevel">
+              <mat-option value="">All Levels</mat-option>
+              <mat-option [value]="FraudRiskLevel.LOW">Low</mat-option>
+              <mat-option [value]="FraudRiskLevel.MEDIUM">Medium</mat-option>
+              <mat-option [value]="FraudRiskLevel.HIGH">High</mat-option>
+            </mat-select>
+          </mat-form-field>
+
+          <button mat-stroked-button type="button" (click)="clearFilters()" class="clear-button">
+            <mat-icon>clear</mat-icon>
+            Clear
+          </button>
+        </form>
+
+        <button mat-raised-button color="primary" (click)="addTransactionType()" class="add-button">
+          <mat-icon>add</mat-icon>
+          Add Type
+        </button>
+      </div>
+
+      <!-- Loading Spinner -->
+      <div *ngIf="loading" class="loading-container">
+        <mat-spinner diameter="50"></mat-spinner>
+      </div>
+
+      <!-- Transaction Types Table -->
+      <div *ngIf="!loading" class="table-container">
+        <table mat-table [dataSource]="transactionTypes" class="types-table">
+          <!-- Code Column -->
+          <ng-container matColumnDef="code">
+            <th mat-header-cell *matHeaderCellDef>Code</th>
+            <td mat-cell *matCellDef="let type">
+              <strong>{{ type.code }}</strong>
+            </td>
+          </ng-container>
+
+          <!-- Description Column -->
+          <ng-container matColumnDef="description">
+            <th mat-header-cell *matHeaderCellDef>Description</th>
+            <td mat-cell *matCellDef="let type">{{ type.description }}</td>
+          </ng-container>
+
+          <!-- Category Column -->
+          <ng-container matColumnDef="category">
+            <th mat-header-cell *matHeaderCellDef>Category</th>
+            <td mat-cell *matCellDef="let type">
+              <mat-chip class="category-chip">
+                {{ getCategoryDisplay(type.category) }}
+              </mat-chip>
+            </td>
+          </ng-container>
+
+          <!-- Fraud Risk Level Column -->
+          <ng-container matColumnDef="fraudRiskLevel">
+            <th mat-header-cell *matHeaderCellDef>Risk Level</th>
+            <td mat-cell *matCellDef="let type">
+              <mat-chip [class]="getFraudRiskClass(type.fraudRiskLevel)">
+                {{ getFraudRiskDisplay(type.fraudRiskLevel) }}
+              </mat-chip>
+            </td>
+          </ng-container>
+
+          <!-- Requires Authorization Column -->
+          <ng-container matColumnDef="requiresAuth">
+            <th mat-header-cell *matHeaderCellDef>Requires Auth</th>
+            <td mat-cell *matCellDef="let type">
+              <mat-icon *ngIf="type.requiresAuthorization" class="icon-yes" matTooltip="Requires authorization">
+                check_circle
+              </mat-icon>
+              <mat-icon *ngIf="!type.requiresAuthorization" class="icon-no" matTooltip="No authorization required">
+                cancel
+              </mat-icon>
+            </td>
+          </ng-container>
+
+          <!-- Active Status Column -->
+          <ng-container matColumnDef="isActive">
+            <th mat-header-cell *matHeaderCellDef>Active</th>
+            <td mat-cell *matCellDef="let type">
+              <mat-slide-toggle
+                [checked]="type.isActive"
+                (change)="toggleActive(type, $event)"
+                color="primary">
+              </mat-slide-toggle>
+            </td>
+          </ng-container>
+
+          <!-- Actions Column -->
+          <ng-container matColumnDef="actions">
+            <th mat-header-cell *matHeaderCellDef>Actions</th>
+            <td mat-cell *matCellDef="let type">
+              <button mat-icon-button color="primary" (click)="editTransactionType(type)" matTooltip="Edit type">
+                <mat-icon>edit</mat-icon>
+              </button>
+              <button mat-icon-button color="warn" (click)="deleteTransactionType(type)" matTooltip="Delete type">
+                <mat-icon>delete</mat-icon>
+              </button>
+            </td>
+          </ng-container>
+
+          <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+          <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+        </table>
+
+        <!-- Empty State -->
+        <div *ngIf="transactionTypes.length === 0" class="empty-state">
+          <mat-icon>category</mat-icon>
+          <p>No transaction types found</p>
+          <p class="empty-state-hint">Try adjusting your search criteria or add a new transaction type</p>
+        </div>
+      </div>
+    </mat-card-content>
+  </mat-card>
+</div>

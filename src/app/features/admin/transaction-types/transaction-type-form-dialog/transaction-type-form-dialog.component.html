@@ -1,0 +1,87 @@
+<h2 mat-dialog-title>{{ getTitle() }}</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="typeForm" class="type-form">
+    <!-- Code -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Code</mat-label>
+      <input matInput formControlName="code" placeholder="Enter transaction type code (e.g., PUR, WDR)">
+      <mat-error *ngIf="typeForm.get('code')?.hasError('required')">
+        Code is required
+      </mat-error>
+      <mat-error *ngIf="typeForm.get('code')?.hasError('minlength')">
+        Code must be at least 2 characters
+      </mat-error>
+      <mat-error *ngIf="typeForm.get('code')?.hasError('maxlength')">
+        Code cannot exceed 10 characters
+      </mat-error>
+      <mat-error *ngIf="typeForm.get('code')?.hasError('pattern')">
+        Code must contain only uppercase letters and numbers
+      </mat-error>
+      <mat-hint *ngIf="isEditMode">Code cannot be changed</mat-hint>
+      <mat-hint *ngIf="!isEditMode">Use uppercase letters and numbers only</mat-hint>
+    </mat-form-field>
+
+    <!-- Description -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Description</mat-label>
+      <input matInput formControlName="description" placeholder="Enter description">
+      <mat-error *ngIf="typeForm.get('description')?.hasError('required')">
+        Description is required
+      </mat-error>
+      <mat-error *ngIf="typeForm.get('description')?.hasError('minlength')">
+        Description must be at least 3 characters
+      </mat-error>
+    </mat-form-field>
+
+    <!-- Category -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Category</mat-label>
+      <mat-select formControlName="category">
+        <mat-option *ngFor="let category of availableCategories" [value]="category">
+          {{ getCategoryDisplay(category) }}
+        </mat-option>
+      </mat-select>
+      <mat-error *ngIf="typeForm.get('category')?.hasError('required')">
+        Category is required
+      </mat-error>
+    </mat-form-field>
+
+    <!-- Fraud Risk Level -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Fraud Risk Level</mat-label>
+      <mat-select formControlName="fraudRiskLevel">
+        <mat-option *ngFor="let level of availableFraudRiskLevels" [value]="level">
+          {{ getFraudRiskDisplay(level) }}
+        </mat-option>
+      </mat-select>
+      <mat-error *ngIf="typeForm.get('fraudRiskLevel')?.hasError('required')">
+        Fraud risk level is required
+      </mat-error>
+      <mat-hint>Indicates the fraud risk associated with this transaction type</mat-hint>
+    </mat-form-field>
+
+    <!-- Requires Authorization -->
+    <div class="checkbox-field">
+      <mat-slide-toggle formControlName="requiresAuthorization" color="primary">
+        Requires Authorization
+      </mat-slide-toggle>
+      <p class="field-hint">Enable if transactions of this type require manual authorization</p>
+    </div>
+
+    <!-- Is Active -->
+    <div class="checkbox-field">
+      <mat-slide-toggle formControlName="isActive" color="primary">
+        Active
+      </mat-slide-toggle>
+      <p class="field-hint">Only active transaction types can be used for new transactions</p>
+    </div>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">Cancel</button>
+  <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="!typeForm.valid">
+    {{ isEditMode ? 'Update' : 'Create' }}
+  </button>
+</mat-dialog-actions>

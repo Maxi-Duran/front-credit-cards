@@ -1,0 +1,108 @@
+<h2 mat-dialog-title>{{ getTitle() }}</h2>
+
+<mat-dialog-content>
+  <form [formGroup]="userForm" class="user-form">
+    <!-- User ID -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>User ID</mat-label>
+      <input matInput formControlName="userId" placeholder="Enter user ID">
+      <mat-error *ngIf="userForm.get('userId')?.hasError('required')">
+        User ID is required
+      </mat-error>
+      <mat-error *ngIf="userForm.get('userId')?.hasError('minlength')">
+        User ID must be at least 3 characters
+      </mat-error>
+      <mat-error *ngIf="userForm.get('userId')?.hasError('maxlength')">
+        User ID cannot exceed 20 characters
+      </mat-error>
+      <mat-hint *ngIf="isEditMode">User ID cannot be changed</mat-hint>
+    </mat-form-field>
+
+    <!-- Name -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Full Name</mat-label>
+      <input matInput formControlName="name" placeholder="Enter full name">
+      <mat-error *ngIf="userForm.get('name')?.hasError('required')">
+        Name is required
+      </mat-error>
+      <mat-error *ngIf="userForm.get('name')?.hasError('minlength')">
+        Name must be at least 3 characters
+      </mat-error>
+    </mat-form-field>
+
+    <!-- Email -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Email</mat-label>
+      <input matInput type="email" formControlName="email" placeholder="Enter email address">
+      <mat-error *ngIf="userForm.get('email')?.hasError('required')">
+        Email is required
+      </mat-error>
+      <mat-error *ngIf="userForm.get('email')?.hasError('email')">
+        Please enter a valid email address
+      </mat-error>
+    </mat-form-field>
+
+    <!-- Password -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Password</mat-label>
+      <input matInput type="password" formControlName="password" 
+             [placeholder]="isEditMode ? 'Leave blank to keep current password' : 'Enter password'">
+      <mat-error *ngIf="userForm.get('password')?.hasError('required')">
+        Password is required
+      </mat-error>
+      <mat-error *ngIf="userForm.get('password')?.hasError('minlength')">
+        Password must be at least 8 characters
+      </mat-error>
+      <mat-hint *ngIf="isEditMode">Leave blank to keep current password</mat-hint>
+    </mat-form-field>
+
+    <!-- Role -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Role</mat-label>
+      <mat-select formControlName="role">
+        <mat-option [value]="UserRole.REGULAR">Regular User</mat-option>
+        <mat-option [value]="UserRole.ADMIN">Administrator</mat-option>
+      </mat-select>
+      <mat-error *ngIf="userForm.get('role')?.hasError('required')">
+        Role is required
+      </mat-error>
+    </mat-form-field>
+
+    <!-- Status -->
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Status</mat-label>
+      <mat-select formControlName="status">
+        <mat-option [value]="UserStatus.ACTIVE">Active</mat-option>
+        <mat-option [value]="UserStatus.INACTIVE">Inactive</mat-option>
+        <mat-option [value]="UserStatus.LOCKED">Locked</mat-option>
+        <mat-option [value]="UserStatus.PENDING">Pending</mat-option>
+      </mat-select>
+      <mat-error *ngIf="userForm.get('status')?.hasError('required')">
+        Status is required
+      </mat-error>
+    </mat-form-field>
+
+    <!-- Permissions -->
+    <div class="permissions-section">
+      <label class="permissions-label">Permissions</label>
+      <div class="permissions-chips">
+        <mat-chip 
+          *ngFor="let permission of availablePermissions"
+          [class.selected]="isPermissionSelected(permission)"
+          (click)="togglePermission(permission)">
+          {{ getPermissionDisplay(permission) }}
+        </mat-chip>
+      </div>
+      <mat-error *ngIf="userForm.get('permissions')?.hasError('required') && userForm.get('permissions')?.touched">
+        At least one permission is required
+      </mat-error>
+    </div>
+  </form>
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button mat-button (click)="onCancel()">Cancel</button>
+  <button mat-raised-button color="primary" (click)="onSubmit()" [disabled]="!userForm.valid">
+    {{ isEditMode ? 'Update' : 'Create' }}
+  </button>
+</mat-dialog-actions>

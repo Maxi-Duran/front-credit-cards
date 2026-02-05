@@ -1,0 +1,11 @@
+<div class="app-container">
+  <app-loading-spinner 
+    *ngIf="loadingService.loading$ | async" 
+    [overlay]="true" 
+    message="Cargando...">
+  </app-loading-spinner>
+  
+  <app-notification-container></app-notification-container>
+  
+  <router-outlet></router-outlet>
+</div>

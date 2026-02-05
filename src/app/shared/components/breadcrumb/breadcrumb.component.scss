@@ -1,0 +1,175 @@
+.breadcrumb-nav {
+  padding: 12px 24px;
+  background-color: #f5f5f5;
+  border-bottom: 1px solid #e0e0e0;
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+}
+
+.breadcrumb-list {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.breadcrumb-item {
+  display: flex;
+  align-items: center;
+  
+  &.active {
+    .breadcrumb-current {
+      color: rgba(0, 0, 0, 0.87);
+      font-weight: 500;
+    }
+  }
+}
+
+.breadcrumb-separator {
+  color: rgba(0, 0, 0, 0.54);
+  font-size: 18px;
+  margin: 0 4px;
+}
+
+.breadcrumb-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  min-height: 32px;
+  border-radius: 4px;
+  color: rgba(0, 0, 0, 0.6);
+  text-transform: none;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.04);
+    color: rgba(0, 0, 0, 0.87);
+  }
+
+  &:focus {
+    background-color: rgba(63, 81, 181, 0.1);
+    color: #3f51b5;
+    outline: 2px solid #3f51b5;
+    outline-offset: 2px;
+  }
+
+  &.home-button {
+    color: #3f51b5;
+    
+    &:hover {
+      background-color: rgba(63, 81, 181, 0.1);
+    }
+  }
+
+  .breadcrumb-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+  }
+
+  .breadcrumb-label {
+    white-space: nowrap;
+  }
+}
+
+.breadcrumb-current {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  color: rgba(0, 0, 0, 0.87);
+  font-weight: 500;
+  font-size: 0.875rem;
+
+  .breadcrumb-icon {
+    font-size: 18px;
+    width: 18px;
+    height: 18px;
+    color: #3f51b5;
+  }
+
+  .breadcrumb-label {
+    white-space: nowrap;
+  }
+}
+
+// Responsive adjustments
+@media (max-width: 768px) {
+  .breadcrumb-nav {
+    padding: 8px 16px;
+    min-height: 40px;
+  }
+
+  .breadcrumb-button,
+  .breadcrumb-current {
+    font-size: 0.8125rem;
+    padding: 2px 6px;
+    gap: 6px;
+
+    .breadcrumb-icon {
+      font-size: 16px;
+      width: 16px;
+      height: 16px;
+    }
+  }
+
+  .breadcrumb-separator {
+    font-size: 16px;
+    margin: 0 2px;
+  }
+}
+
+@media (max-width: 480px) {
+  .breadcrumb-nav {
+    padding: 6px 12px;
+  }
+
+  .breadcrumb-list {
+    gap: 2px;
+  }
+
+  .breadcrumb-button .breadcrumb-label,
+  .breadcrumb-current .breadcrumb-label {
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  // Hide icons on very small screens to save space
+  .breadcrumb-icon {
+    display: none;
+  }
+}
+
+// High contrast mode support
+@media (prefers-contrast: high) {
+  .breadcrumb-nav {
+    border-bottom: 2px solid #000;
+  }
+
+  .breadcrumb-button {
+    border: 1px solid transparent;
+
+    &:focus {
+      border-color: #000;
+      outline: 2px solid #000;
+    }
+  }
+
+  .breadcrumb-separator {
+    color: #000;
+  }
+}
+
+// Reduced motion support
+@media (prefers-reduced-motion: reduce) {
+  .breadcrumb-button {
+    transition: none;
+  }
+}

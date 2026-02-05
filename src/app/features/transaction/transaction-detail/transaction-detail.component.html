@@ -1,0 +1,284 @@
+<div class="transaction-detail-container">
+  <!-- Loading Spinner -->
+  <div class="loading-container" *ngIf="loading$ | async">
+    <mat-spinner diameter="50"></mat-spinner>
+    <p>Loading transaction details...</p>
+  </div>
+
+  <!-- Transaction Details -->
+  <div class="transaction-content" *ngIf="!(loading$ | async) && (transaction$ | async) as transaction">
+    
+    <!-- Header Section -->
+    <div class="header-section">
+      <div class="title-section">
+        <button mat-icon-button (click)="goBack()" class="back-button">
+          <mat-icon>arrow_back</mat-icon>
+        </button>
+        <div class="title-info">
+          <h1>Transaction Details</h1>
+          <p class="transaction-id">ID: {{ transaction.id }}</p>
+        </div>
+      </div>
+      
+      <div class="action-buttons">
+        <button mat-stroked-button (click)="printTransaction()">
+          <mat-icon>print</mat-icon>
+          Print
+        </button>
+        <button mat-stroked-button (click)="exportTransaction()">
+          <mat-icon>download</mat-icon>
+          Export
+        </button>
+        <button 
+          mat-raised-button 
+          color="primary" 
+          (click)="editTransaction(transaction)"
+          *ngIf="transaction.status === TransactionStatus.PENDING">
+          <mat-icon>edit</mat-icon>
+          Edit
+        </button>
+      </div>
+    </div>
+
+    <!-- Status and Type Indicators -->
+    <div class="status-section">
+      <mat-chip [color]="getStatusColor(transaction.status)" selected class="status-chip">
+        <mat-icon>{{ transaction.status === TransactionStatus.COMPLETED ? 'check_circle' : 
+                     transaction.status === TransactionStatus.PENDING ? 'schedule' :
+                     transaction.status === TransactionStatus.FAILED ? 'error' : 'cancel' }}</mat-icon>
+        {{ transaction.status | titlecase }}
+      </mat-chip>
+      
+      <mat-chip [color]="getTypeColor(transaction.transactionType)" selected class="type-chip">
+        {{ transaction.transactionType | titlecase }}
+      </mat-chip>
+
+      <mat-chip 
+        *ngIf="transaction.fraudIndicator" 
+        color="warn" 
+        selected 
+        class="fraud-chip">
+        <mat-icon>warning</mat-icon>
+        Fraud Alert - {{ transaction.fraudRiskLevel | titlecase }} Risk
+      </mat-chip>
+    </div>
+
+    <!-- Main Transaction Information -->
+    <div class="cards-section">
+      
+      <!-- Transaction Summary Card -->
+      <mat-card class="summary-card">
+        <mat-card-header>
+          <mat-card-title>Transaction Summary</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="summary-grid">
+            <div class="summary-item amount-item">
+              <label>Amount</label>
+              <div class="amount-display">
+                <span class="primary-amount" [class.negative]="transaction.amount < 0">
+                  {{ formatCurrency(transaction.amount, transaction.currency) }}
+                </span>
+                <span class="original-amount" *ngIf="transaction.originalAmount && transaction.originalCurrency !== transaction.currency">
+                  Original: {{ formatCurrency(transaction.originalAmount, transaction.originalCurrency) }}
+                </span>
+                <span class="exchange-rate" *ngIf="transaction.exchangeRate">
+                  Rate: {{ transaction.exchangeRate }}
+                </span>
+              </div>
+            </div>
+
+            <div class="summary-item">
+              <label>Balance After</label>
+              <span class="value">{{ formatCurrency(transaction.balance, transaction.currency) }}</span>
+            </div>
+
+            <div class="summary-item" *ngIf="transaction.processingFee">
+              <label>Processing Fee</label>
+              <span class="value fee">{{ formatCurrency(transaction.processingFee, transaction.currency) }}</span>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Transaction Details Card -->
+      <mat-card class="details-card">
+        <mat-card-header>
+          <mat-card-title>Transaction Details</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="details-grid">
+            <div class="detail-item">
+              <label>Description</label>
+              <span class="value">{{ transaction.description }}</span>
+            </div>
+
+            <div class="detail-item">
+              <label>Merchant</label>
+              <div class="merchant-info">
+                <span class="merchant-name">{{ transaction.merchantName }}</span>
+                <span class="merchant-category" *ngIf="transaction.merchantCategory">
+                  {{ transaction.merchantCategory }}
+                </span>
+              </div>
+            </div>
+
+            <div class="detail-item">
+              <label>Transaction Date</label>
+              <span class="value">{{ formatDate(transaction.transactionDate) }}</span>
+            </div>
+
+            <div class="detail-item" *ngIf="transaction.postingDate !== transaction.transactionDate">
+              <label>Posting Date</label>
+              <span class="value">{{ formatDate(transaction.postingDate) }}</span>
+            </div>
+
+            <div class="detail-item">
+              <label>Authorization Code</label>
+              <div class="copyable-value">
+                <span class="value code">{{ transaction.authorizationCode }}</span>
+                <button mat-icon-button (click)="copyToClipboard(transaction.authorizationCode, 'Authorization code')" matTooltip="Copy">
+                  <mat-icon>content_copy</mat-icon>
+                </button>
+              </div>
+            </div>
+
+            <div class="detail-item">
+              <label>Reference Number</label>
+              <div class="copyable-value">
+                <span class="value code">{{ transaction.referenceNumber }}</span>
+                <button mat-icon-button (click)="copyToClipboard(transaction.referenceNumber, 'Reference number')" matTooltip="Copy">
+                  <mat-icon>content_copy</mat-icon>
+                </button>
+              </div>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Location Information Card -->
+      <mat-card class="location-card" *ngIf="transaction.location">
+        <mat-card-header>
+          <mat-card-title>Location Information</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="location-grid">
+            <div class="location-item">
+              <label>Country</label>
+              <span class="value">{{ transaction.location.country }}</span>
+            </div>
+
+            <div class="location-item">
+              <label>City</label>
+              <span class="value">{{ transaction.location.city }}</span>
+            </div>
+
+            <div class="location-item" *ngIf="transaction.location.address">
+              <label>Address</label>
+              <span class="value">{{ transaction.location.address }}</span>
+            </div>
+
+            <div class="location-item" *ngIf="transaction.location.coordinates">
+              <label>Coordinates</label>
+              <div class="coordinates-value">
+                <span class="value">{{ formatCoordinates(transaction.location.coordinates) }}</span>
+                <button mat-icon-button (click)="openMap(transaction.location.coordinates)" matTooltip="View on map">
+                  <mat-icon>map</mat-icon>
+                </button>
+              </div>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Account and Card Information -->
+      <mat-card class="account-card">
+        <mat-card-header>
+          <mat-card-title>Account & Card Information</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="account-grid">
+            <div class="account-item">
+              <label>Card ID</label>
+              <div class="copyable-value">
+                <span class="value code">{{ transaction.cardId }}</span>
+                <button mat-icon-button (click)="copyToClipboard(transaction.cardId, 'Card ID')" matTooltip="Copy">
+                  <mat-icon>content_copy</mat-icon>
+                </button>
+              </div>
+            </div>
+
+            <div class="account-item">
+              <label>Account ID</label>
+              <div class="copyable-value">
+                <span class="value code">{{ transaction.accountId }}</span>
+                <button mat-icon-button (click)="copyToClipboard(transaction.accountId, 'Account ID')" matTooltip="Copy">
+                  <mat-icon>content_copy</mat-icon>
+                </button>
+              </div>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Fraud Information Card -->
+      <mat-card class="fraud-card" *ngIf="transaction.fraudIndicator">
+        <mat-card-header>
+          <mat-card-title class="fraud-title">
+            <mat-icon color="warn">security</mat-icon>
+            Fraud Detection Information
+          </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="fraud-grid">
+            <div class="fraud-item">
+              <label>Risk Level</label>
+              <mat-chip [color]="getFraudRiskColor(transaction.fraudRiskLevel)" selected>
+                {{ transaction.fraudRiskLevel | titlecase }}
+              </mat-chip>
+            </div>
+
+            <div class="fraud-item">
+              <label>Fraud Detected</label>
+              <div class="fraud-status">
+                <mat-icon color="warn">warning</mat-icon>
+                <span>Yes - Review Required</span>
+              </div>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <!-- Audit Information Card -->
+      <mat-card class="audit-card">
+        <mat-card-header>
+          <mat-card-title>Audit Information</mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+          <div class="audit-grid">
+            <div class="audit-item">
+              <label>Created</label>
+              <span class="value">{{ formatDate(transaction.createdAt) }}</span>
+            </div>
+
+            <div class="audit-item">
+              <label>Last Updated</label>
+              <span class="value">{{ formatDate(transaction.updatedAt) }}</span>
+            </div>
+          </div>
+        </mat-card-content>
+      </mat-card>
+    </div>
+  </div>
+
+  <!-- Error State -->
+  <div class="error-state" *ngIf="!(loading$ | async) && !(transaction$ | async)">
+    <mat-icon class="error-icon">error_outline</mat-icon>
+    <h2>Transaction Not Found</h2>
+    <p>The requested transaction could not be found or you don't have permission to view it.</p>
+    <button mat-raised-button color="primary" (click)="goBack()">
+      <mat-icon>arrow_back</mat-icon>
+      Back to Transactions
+    </button>
+  </div>
+</div>
