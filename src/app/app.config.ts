@@ -8,8 +8,11 @@ import { provideClientHydration, withEventReplay } from '@angular/platform-brows
 import { AuthInterceptor } from './core/interceptors/auth.interceptor';
 import { ErrorInterceptor } from './core/interceptors/error.interceptor';
 import { GlobalErrorHandler } from './core/services/error-handler.service';
-
+import { registerLocaleData } from '@angular/common'; 
+import localeEs from '@angular/common/locales/es';
+registerLocaleData(localeEs);
 export const appConfig: ApplicationConfig = {
+  
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes), 

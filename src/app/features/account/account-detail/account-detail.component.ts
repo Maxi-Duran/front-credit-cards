@@ -52,9 +52,9 @@ import { NotificationService } from '../../../core/services/notification.service
         <!-- Header -->
         <div class="header">
           <div class="header-info">
-            <h1>Cuenta {{ account.accountNumber }}</h1>
-            <mat-chip [class]="'status-' + account.status">
-              {{ getStatusLabel(account.status) }}
+            <h1>Cuenta {{ account.account_number || account.accountNumber }}</h1>
+            <mat-chip [class]="'status-' + (account.status || 'active')">
+              {{ getStatusLabel(account.status || 'active') }}
             </mat-chip>
           </div>
           <div class="header-actions">
@@ -82,24 +82,51 @@ import { NotificationService } from '../../../core/services/notification.service
                   <mat-card-content>
                     <div class="info-row">
                       <span class="label">Número de Cuenta:</span>
-                      <span class="value">{{ account.accountNumber }}</span>
+                      <span class="value">{{ account.account_number || account.accountNumber }}</span>
                     </div>
                     <mat-divider></mat-divider>
                     <div class="info-row">
-                      <span class="label">ID Cliente:</span>
-                      <span class="value">{{ account.customerId }}</span>
+                      <span class="label">Cliente:</span>
+                      <span class="value">{{ account.first_name }} {{ account.last_name }}</span>
                     </div>
                     <mat-divider></mat-divider>
                     <div class="info-row">
-                      <span class="label">Tipo de Cuenta:</span>
-                      <span class="value">{{ getAccountTypeLabel(account.accountType) }}</span>
+                      <span class="label">Teléfono:</span>
+                      <span class="value">{{ account.phone }}</span>
                     </div>
                     <mat-divider></mat-divider>
                     <div class="info-row">
                       <span class="label">Estado:</span>
-                      <mat-chip [class]="'status-' + account.status">
-                        {{ getStatusLabel(account.status) }}
+                      <mat-chip [class]="'status-' + (account.status || 'active')">
+                        {{ getStatusLabel(account.status || 'active') }}
                       </mat-chip>
+                    </div>
+                  </mat-card-content>
+                </mat-card>
+
+                <mat-card class="info-card">
+                  <mat-card-header>
+                    <mat-card-title>Información de Contacto</mat-card-title>
+                  </mat-card-header>
+                  <mat-card-content>
+                    <div class="info-row">
+                      <span class="label">Dirección:</span>
+                      <span class="value">{{ account.address }}</span>
+                    </div>
+                    <mat-divider></mat-divider>
+                    <div class="info-row">
+                      <span class="label">Ciudad:</span>
+                      <span class="value">{{ account.city }}</span>
+                    </div>
+                    <mat-divider></mat-divider>
+                    <div class="info-row">
+                      <span class="label">Estado:</span>
+                      <span class="value">{{ account.state }}</span>
+                    </div>
+                    <mat-divider></mat-divider>
+                    <div class="info-row">
+                      <span class="label">Código Postal:</span>
+                      <span class="value">{{ account.zip_code }}</span>
                     </div>
                   </mat-card-content>
                 </mat-card>
@@ -111,8 +138,8 @@ import { NotificationService } from '../../../core/services/notification.service
                   <mat-card-content>
                     <div class="info-row">
                       <span class="label">Saldo Actual:</span>
-                      <span class="value balance" [class.negative]="account.balance < 0">
-                        {{ account.balance | currency:'USD':'symbol':'1.2-2' }}
+                      <span class="value balance" [class.negative]="(account.balance || 0) < 0">
+                        {{ (account.balance || 0) | currency:'USD':'symbol':'1.2-2' }}
                       </span>
                     </div>
                     <mat-divider></mat-divider>
@@ -496,17 +523,18 @@ export class AccountDetailComponent implements OnInit, OnDestroy {
     }
   }
 
-  getStatusLabel(status: AccountStatus): string {
-    const labels = {
-      [AccountStatus.ACTIVE]: 'Activa',
-      [AccountStatus.INACTIVE]: 'Inactiva',
-      [AccountStatus.CLOSED]: 'Cerrada',
-      [AccountStatus.SUSPENDED]: 'Suspendida'
+  getStatusLabel(status: AccountStatus | string): string {
+    const labels: Record<string, string> = {
+      'active': 'Activa',
+      'inactive': 'Inactiva',
+      'closed': 'Cerrada',
+      'suspended': 'Suspendida'
     };
     return labels[status] || status;
   }
 
-  getAccountTypeLabel(type: string): string {
+  getAccountTypeLabel(type: string | undefined): string {
+    if (!type) return 'N/A';
     const labels: Record<string, string> = {
       'checking': 'Corriente',
       'savings': 'Ahorros',

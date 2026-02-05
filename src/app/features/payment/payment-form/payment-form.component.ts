@@ -642,7 +642,7 @@ export class PaymentFormComponent implements OnInit, OnDestroy {
     const formValue = this.paymentForm.value;
     
     const paymentRequest: PaymentRequest = {
-      accountId: this.selectedAccount.id,
+      accountId: this.selectedAccount.id.toString(),
       amount: formValue.amount,
       paymentMethod: formValue.paymentMethod,
       description: formValue.description || undefined,
@@ -678,7 +678,7 @@ export class PaymentFormComponent implements OnInit, OnDestroy {
     const formValue = this.paymentForm.value;
     
     const paymentRequest: PaymentRequest = {
-      accountId: this.selectedAccount.id,
+      accountId: this.selectedAccount.id.toString(),
       amount: formValue.amount,
       paymentMethod: formValue.paymentMethod,
       description: formValue.description || undefined,

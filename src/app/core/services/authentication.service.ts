@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, throwError, timer } from 'rxjs';
 import { map, tap, catchError, switchMap } from 'rxjs/operators';
 import { Router } from '@angular/router';
-
+import { HttpParams,HttpHeaders } from '@angular/common/http';
 import { ApiService, ApiResponse } from './api.service';
 import { 
   LoginCredentials, 
@@ -47,20 +47,18 @@ export class AuthenticationService {
 
     const token = this.getStoredToken();
     const refreshToken = this.getStoredRefreshToken();
+    const storedUser = this.getStoredUser();
     
-    if (token && refreshToken) {
+    if (token && refreshToken && storedUser) {
       try {
         const payload = this.decodeToken(token);
         if (this.isTokenValid(payload)) {
-          const user = this.createUserFromToken(payload);
-          this.setCurrentUser(user);
+          // Use stored user data instead of recreating from token
+          this.setCurrentUser(storedUser);
           this.setToken(token);
           this.startSessionMonitoring();
         } else {
-          // Try to refresh the token (commented out for mock version)
-          // this.refreshToken().subscribe({
-          //   error: () => this.clearAuthState()
-          // });
+          // Token expired, clear everything
           this.clearAuthState();
         }
       } catch (error) {
@@ -70,87 +68,91 @@ export class AuthenticationService {
   }
 
   /**
-   * Login with credentials - ORIGINAL (commented out for development without backend)
+   * Login with credentials - Real API implementation
    */
-  // login(credentials: LoginCredentials): Observable<AuthResponse> {
-  //   return this.apiService.post<AuthResponse>(environment.endpoints.auth.login, credentials)
-  //     .pipe(
-  //       map(response => response.data),
-  //       tap(authResponse => {
-  //         if (authResponse.success) {
-  //           this.handleSuccessfulLogin(authResponse);
-  //         }
-  //       }),
-  //       catchError(error => {
-  //         console.error('Login failed:', error);
-  //         return throwError(() => error);
-  //       })
-  //     );
-  // }
+login(credentials: LoginCredentials): Observable<AuthResponse> {
+  // 1. Cuerpo como objeto plano (Angular lo convertirá a JSON automáticamente)
+  const loginRequest = {
+    username: credentials.userId,
+    password: credentials.password
+  };
 
+  // 2. Cabeceras explícitas para evitar el "text/plain"
+  const httpOptions = {
+    headers: new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    })
+  };
+
+  return this.http.post<{
+    access_token: string;
+    token_type: string;
+    expires_in: number;
+    user: any;
+  }>(`${environment.apiUrl}${environment.endpoints.auth.login}`, loginRequest, httpOptions)
+  .pipe(
+    map(response => {
+      // Tu lógica de transformación se mantiene igual
+      const user: User = {
+        id: response.user.id.toString(),
+        name: response.user.username,
+        role: response.user.username.toLowerCase().includes('admin') ? UserRole.ADMIN : UserRole.REGULAR,
+        permissions: this.getDefaultPermissions(response.user.username),
+        language: credentials.language,
+        lastLogin: new Date(),
+        sessionTimeout: response.expires_in * 1000
+      };
+
+      return {
+        success: true,
+        user: user,
+        token: response.access_token,
+        refreshToken: response.access_token,
+        expiresIn: response.expires_in,
+        message: credentials.language === 'es' ? 'Login exitoso' : 'Login successful'
+      };
+    }),
+    tap(authResponse => {
+      console.log('Login successful:', credentials.userId);
+      this.handleSuccessfulLogin(authResponse);
+    }),
+    catchError(error => {
+      // Si aquí ves un error 401, el problema es el usuario/password en la DB
+      console.error('Error detallado en el login:', error);
+      return throwError(() => error);
+    })
+  );
+}
   /**
-   * Login with credentials - MOCK VERSION (for development without backend)
-   * Automatically logs in any user with mock data
+   * Get default permissions based on username
    */
-  login(credentials: LoginCredentials): Observable<AuthResponse> {
-    // Simulate API delay
-    return timer(1000).pipe(
-      map(() => {
-        // Determine user role based on userId (for testing purposes)
-        const isAdmin = credentials.userId.toLowerCase().includes('admin') || 
-                       credentials.userId.toLowerCase() === 'admin' ||
-                       credentials.userId === '1';
-        
-        // Create mock user
-        const mockUser: User = {
-          id: credentials.userId,
-          name: isAdmin ? 'Administrador Demo' : 'Usuario Demo',
-          role: isAdmin ? UserRole.ADMIN : UserRole.REGULAR,
-          permissions: isAdmin ? [
-            Permission.VIEW_ACCOUNTS,
-            Permission.UPDATE_ACCOUNTS,
-            Permission.VIEW_CARDS,
-            Permission.UPDATE_CARDS,
-            Permission.VIEW_TRANSACTIONS,
-            Permission.ADD_TRANSACTIONS,
-            Permission.VIEW_REPORTS,
-            Permission.MANAGE_USERS,
-            Permission.MANAGE_TRANSACTION_TYPES
-          ] : [
-            Permission.VIEW_ACCOUNTS,
-            Permission.UPDATE_ACCOUNTS,
-            Permission.VIEW_CARDS,
-            Permission.UPDATE_CARDS,
-            Permission.VIEW_TRANSACTIONS,
-            Permission.ADD_TRANSACTIONS,
-            Permission.VIEW_REPORTS
-          ],
-          language: credentials.language,
-          lastLogin: new Date(),
-          sessionTimeout: 3600000 // 1 hour
-        };
-
-        // Create mock auth response
-        const mockAuthResponse: AuthResponse = {
-          success: true,
-          user: mockUser,
-          token: this.generateMockJWT(mockUser),
-          refreshToken: 'mock-refresh-token-' + Date.now(),
-          expiresIn: 3600,
-          message: credentials.language === 'es' ? 'Login exitoso' : 'Login successful'
-        };
-
-        return mockAuthResponse;
-      }),
-      tap(authResponse => {
-        console.log('Mock login successful for user:', credentials.userId);
-        this.handleSuccessfulLogin(authResponse);
-      }),
-      catchError(error => {
-        console.error('Mock login failed:', error);
-        return throwError(() => error);
-      })
-    );
+  private getDefaultPermissions(username: string): Permission[] {
+    const isAdmin = username.toLowerCase().includes('admin');
+    
+    if (isAdmin) {
+      return [
+        Permission.VIEW_ACCOUNTS,
+        Permission.UPDATE_ACCOUNTS,
+        Permission.VIEW_CARDS,
+        Permission.UPDATE_CARDS,
+        Permission.VIEW_TRANSACTIONS,
+        Permission.ADD_TRANSACTIONS,
+        Permission.VIEW_REPORTS,
+        Permission.MANAGE_USERS,
+        Permission.MANAGE_TRANSACTION_TYPES
+      ];
+    }
+    
+    return [
+      Permission.VIEW_ACCOUNTS,
+      Permission.UPDATE_ACCOUNTS,
+      Permission.VIEW_CARDS,
+      Permission.UPDATE_CARDS,
+      Permission.VIEW_TRANSACTIONS,
+      Permission.ADD_TRANSACTIONS,
+      Permission.VIEW_REPORTS
+    ];
   }
 
   /**
@@ -292,6 +294,7 @@ export class AuthenticationService {
   private handleSuccessfulLogin(authResponse: AuthResponse): void {
     this.storeToken(authResponse.token);
     this.storeRefreshToken(authResponse.refreshToken);
+    this.storeUser(authResponse.user); // Store user data in localStorage
     this.setCurrentUser(authResponse.user);
     this.setToken(authResponse.token);
     this.startSessionMonitoring();
@@ -317,6 +320,7 @@ export class AuthenticationService {
   private clearAuthState(): void {
     this.removeStoredToken();
     this.removeStoredRefreshToken();
+    this.removeStoredUser();
     this.currentUserSubject.next(null);
     this.tokenSubject.next(null);
     this.stopSessionMonitoring();
@@ -398,6 +402,32 @@ export class AuthenticationService {
   }
 
   /**
+   * Store user data in localStorage
+   */
+  private storeUser(user: User): void {
+    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+      localStorage.setItem('carddemo_user', JSON.stringify(user));
+    }
+  }
+
+  /**
+   * Get stored user from localStorage
+   */
+  private getStoredUser(): User | null {
+    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+      const userStr = localStorage.getItem('carddemo_user');
+      if (userStr) {
+        try {
+          return JSON.parse(userStr);
+        } catch {
+          return null;
+        }
+      }
+    }
+    return null;
+  }
+
+  /**
    * Get stored token from localStorage
    */
   private getStoredToken(): string | null {
@@ -423,6 +453,15 @@ export class AuthenticationService {
   private removeStoredToken(): void {
     if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
       localStorage.removeItem(environment.security.tokenKey);
+    }
+  }
+
+  /**
+   * Remove stored user from localStorage
+   */
+  private removeStoredUser(): void {
+    if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+      localStorage.removeItem('carddemo_user');
     }
   }
 

@@ -19,6 +19,7 @@ import { Account, AccountStatus, AccountFilter, SearchCriteria } from '../../../
 import { AccountService } from '../../../core/services/account.service';
 import { LoadingService } from '../../../core/services/loading.service';
 import { NotificationService } from '../../../core/services/notification.service';
+import { finalize } from 'rxjs';
 
 @Component({
   selector: 'app-account-list',
@@ -111,47 +112,46 @@ import { NotificationService } from '../../../core/services/notification.service
 
           <!-- Accounts Table -->
           <div *ngIf="!isLoading && accounts.length > 0" class="table-container">
+          
             <table mat-table [dataSource]="accounts" matSort (matSortChange)="onSortChange($event)">
               <!-- Account Number Column -->
               <ng-container matColumnDef="accountNumber">
                 <th mat-header-cell *matHeaderCellDef mat-sort-header>Número de Cuenta</th>
-                <td mat-cell *matCellDef="let account">{{ account.accountNumber }}</td>
+                <td mat-cell *matCellDef="let account">{{ account.account_number }}</td>
               </ng-container>
 
               <!-- Customer ID Column -->
               <ng-container matColumnDef="customerId">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>ID Cliente</th>
-                <td mat-cell *matCellDef="let account">{{ account.customerId }}</td>
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Cliente</th>
+                <td mat-cell *matCellDef="let account">{{ account.first_name }} {{ account.last_name }}</td>
               </ng-container>
 
               <!-- Account Type Column -->
               <ng-container matColumnDef="accountType">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Tipo</th>
-                <td mat-cell *matCellDef="let account">{{ getAccountTypeLabel(account.accountType) }}</td>
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Teléfono</th>
+                <td mat-cell *matCellDef="let account">{{ account.phone }}</td>
               </ng-container>
 
               <!-- Balance Column -->
               <ng-container matColumnDef="balance">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Saldo</th>
-                <td mat-cell *matCellDef="let account" [class.negative-balance]="account.balance < 0">
-                  {{ account.balance | currency:'USD':'symbol':'1.2-2' }}
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Dirección</th>
+                <td mat-cell *matCellDef="let account">
+                  {{ account.address }}, {{ account.city }}, {{ account.state }}
                 </td>
               </ng-container>
 
               <!-- Status Column -->
               <ng-container matColumnDef="status">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Estado</th>
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Código Postal</th>
                 <td mat-cell *matCellDef="let account">
-                  <mat-chip [class]="'status-' + account.status">
-                    {{ getStatusLabel(account.status) }}
-                  </mat-chip>
+                  {{ account.zip_code }}
                 </td>
               </ng-container>
 
               <!-- Last Activity Column -->
               <ng-container matColumnDef="lastActivity">
-                <th mat-header-cell *matHeaderCellDef mat-sort-header>Última Actividad</th>
-                <td mat-cell *matCellDef="let account">{{ account.lastActivity | date:'short' }}</td>
+                <th mat-header-cell *matHeaderCellDef mat-sort-header>Fecha de Creación</th>
+                <td mat-cell *matCellDef="let account">{{ account.created_at | date:'short' }}</td>
               </ng-container>
 
               <!-- Actions Column -->
@@ -385,36 +385,25 @@ export class AccountListComponent implements OnInit, OnDestroy {
         this.loadAccounts();
       });
   }
-
   private loadAccounts(): void {
     this.isLoading = true;
-    
-    const formValue = this.filterForm.value;
-    const filter: AccountFilter = {};
-    
-    if (formValue.status) filter.status = formValue.status;
-    if (formValue.accountType) filter.accountType = formValue.accountType;
 
-    const criteria: SearchCriteria = {
-      query: formValue.query || undefined,
-      filters: filter,
-      sorting: { field: 'accountNumber', direction: 'asc' },
-      pagination: { page: this.currentPage + 1, pageSize: this.pageSize }
-    };
-
-    this.accountService.searchAccounts(criteria)
-      .pipe(takeUntil(this.destroy$))
+    this.accountService.getAccounts()
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => this.isLoading = false)
+      )
       .subscribe({
-        next: (accounts) => {
+        next: (accounts: Account[]) => {
+          console.log('Accounts loaded:', accounts);
           this.accounts = accounts;
-          this.isLoading = false;
-          // Note: In a real implementation, totalItems would come from the API response
-          this.totalItems = accounts.length;
+          this.totalItems = this.accounts.length;
         },
         error: (error) => {
           console.error('Error loading accounts:', error);
-          this.isLoading = false;
           this.notificationService.showError('Error al cargar las cuentas');
+          this.accounts = [];
+          this.totalItems = 0;
         }
       });
   }

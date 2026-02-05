@@ -554,7 +554,7 @@ export class CardListComponent implements OnInit, OnDestroy {
     
     const formValue = this.filterForm.value;
     const filter: CardFilter = {
-      accountId: this.selectedAccount.id
+      accountId: this.selectedAccount.id.toString()
     };
     
     if (formValue.status) filter.status = formValue.status;

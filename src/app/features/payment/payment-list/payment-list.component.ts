@@ -455,8 +455,9 @@ export class PaymentListComponent implements OnInit, OnDestroy {
         next: (accounts) => {
           this.accounts = accounts;
           if (accounts.length > 0) {
-            this.selectedAccountControl.setValue(accounts[0].id);
-            this.loadPaymentHistory(accounts[0].id);
+            const accountId = accounts[0].id.toString();
+            this.selectedAccountControl.setValue(accountId);
+            this.loadPaymentHistory(accountId);
           }
         },
         error: (error) => {

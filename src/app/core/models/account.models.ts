@@ -8,14 +8,26 @@ export enum AccountStatus {
 }
 
 export interface Account {
-  id: string;
-  customerId: string;
-  accountNumber: string;
-  accountType: string;
-  balance: number;
-  status: AccountStatus;
-  openDate: Date;
-  lastActivity: Date;
+  id: number | string;
+  account_number: string;
+  first_name: string;
+  last_name: string;
+  phone: string;
+  address: string;
+  city: string;
+  state: string;
+  zip_code: string;
+  created_at: string;
+  updated_at: string;
+  
+  // Computed/mapped properties for compatibility
+  customerId?: string;
+  accountNumber?: string;
+  accountType?: string;
+  balance?: number;
+  status?: AccountStatus;
+  openDate?: Date;
+  lastActivity?: Date;
   creditLimit?: number;
   availableCredit?: number;
   interestRate?: number;

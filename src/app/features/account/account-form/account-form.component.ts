@@ -491,7 +491,7 @@ export class AccountFormComponent implements OnInit, OnDestroy {
 
     const formValue = this.accountForm.value;
     const updateRequest: UpdateAccountRequest = {
-      id: this.currentAccount.id,
+      id: this.currentAccount.id.toString(),
       accountType: formValue.accountType,
       status: formValue.status,
       creditLimit: formValue.creditLimit || undefined,

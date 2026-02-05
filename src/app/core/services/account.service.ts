@@ -28,18 +28,65 @@ export class AccountService {
   ) {}
 
   /**
-   * Get all accounts
+   * Get current user's account (from /accounts/me endpoint)
+   */
+  getMyAccount(): Observable<Account> {
+    return this.http.get<any>(`${environment.apiUrl}${environment.endpoints.accounts.me}`)
+      .pipe(
+        map(response => this.mapApiAccountToAccount(response)),
+        tap(account => {
+          // Store as single account in array for compatibility
+          this.accountsSubject.next([account]);
+          this.selectedAccountSubject.next(account);
+        }),
+        catchError(error => {
+          console.error('Error fetching my account:', error);
+          return throwError(() => error);
+        })
+      );
+  }
+
+  /**
+   * Get all accounts (for admin or list view)
+   * Note: This uses /accounts/me for now since the API spec shows it returns user's account
    */
   getAccounts(): Observable<Account[]> {
-    return this.apiService.get<Account[]>(environment.endpoints.accounts.list)
+    return this.getMyAccount()
       .pipe(
-        map(response => response.data),
+        map(account => [account]), // Convert single account to array
         tap(accounts => this.accountsSubject.next(accounts)),
         catchError(error => {
           console.error('Error fetching accounts:', error);
           return throwError(() => error);
         })
       );
+  }
+
+  /**
+   * Map API response to Account model
+   */
+  private mapApiAccountToAccount(apiAccount: any): Account {
+    return {
+      id: apiAccount.id,
+      account_number: apiAccount.account_number,
+      first_name: apiAccount.first_name,
+      last_name: apiAccount.last_name,
+      phone: apiAccount.phone,
+      address: apiAccount.address,
+      city: apiAccount.city,
+      state: apiAccount.state,
+      zip_code: apiAccount.zip_code,
+      created_at: apiAccount.created_at,
+      updated_at: apiAccount.updated_at,
+      // Mapped properties for compatibility with existing UI
+      customerId: apiAccount.id?.toString(),
+      accountNumber: apiAccount.account_number,
+      accountType: 'checking', // Default value, adjust as needed
+      balance: 0, // Not provided by API, default to 0
+      status: 'active' as any, // Default to active
+      openDate: new Date(apiAccount.created_at),
+      lastActivity: new Date(apiAccount.updated_at)
+    };
   }
 
   /**

@@ -1,14 +1,16 @@
 export const environment = {
   production: false,
-  apiUrl: 'http://localhost:8080/api',
+  apiUrl: 'http://localhost:8000',
   endpoints: {
     auth: {
       login: '/auth/login',
       logout: '/auth/logout',
+      me: '/auth/me',
       refresh: '/auth/refresh',
       profile: '/auth/profile'
     },
     accounts: {
+      me: '/accounts/me',
       list: '/accounts',
       detail: '/accounts/:id',
       update: '/accounts/:id',
